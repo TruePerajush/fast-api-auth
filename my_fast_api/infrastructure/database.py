@@ -1,30 +1,29 @@
-from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from collections.abc import AsyncGenerator
 
-from my_fast_api.config import get_settings
-from my_fast_api.domain.entities import Base
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-settings = get_settings()
-
-engine: AsyncEngine = create_async_engine(
-    settings.database_url,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-    echo=settings.debug,
-)
-
-AsyncSessionLocal = async_sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+from my_fast_api.dependencies import get_settings
 
 
-async def create_tables():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+async def get_db_engine():
+    settings = get_settings()
+    engine = create_async_engine(
+        settings.database_url,
+        pool_pre_ping=True
+    )
+    try:
+        yield engine
+    finally:
+        await engine.dispose()
+
+async def get_db_session(
+    engine_provider=Depends(get_db_engine)
+) -> AsyncGenerator[AsyncSession]:
+    async_session_maker = async_sessionmaker(
+        engine_provider,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+    async with async_session_maker() as session:
+        yield session

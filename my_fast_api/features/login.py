@@ -20,17 +20,6 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=50)
 
-    @field_validator("password")
-    @classmethod
-    def is_password_valid(cls, v: str) -> str:
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
-            raise ValueError("Пароль должен содержать хотя бы один специальный символ")
-        if not re.search(r"\d", v):
-            raise ValueError("Пароль должен содержать хотя бы одну цифру")
-        if not re.search(r"[A-Z]", v):
-            raise ValueError("Пароль должен содержать хотя бы одну заглавную букву")
-        return v
-
 
 class LoginResponse(BaseModel):
     access_token: str
