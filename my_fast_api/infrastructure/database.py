@@ -1,22 +1,23 @@
 from collections.abc import AsyncGenerator
-from typing import Optional
 
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-from my_fast_api.config import Settings
 from my_fast_api.domain.entities import Base
 
-# Singleton engine instance
 _engine: AsyncEngine | None = None
 _session_maker: async_sessionmaker[AsyncSession] | None = None
 
 
-def init_db_engine(settings: Settings) -> AsyncEngine:
+def init_db_engine(database_url: str) -> AsyncEngine:
     global _engine, _session_maker
     if _engine is None:
         _engine = create_async_engine(
-            settings.database_url,
+            database_url,
             pool_pre_ping=True,
             pool_size=10,
             max_overflow=20
