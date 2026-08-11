@@ -8,8 +8,9 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from my_fast_api.infrastructure.database import get_db_session
 import my_fast_api.infrastructure.services.password_hasher as hasher
-from my_fast_api.dependencies import get_db, get_rate_limiter
+from my_fast_api.dependencies import get_rate_limiter
 from my_fast_api.domain.entities import User
 from my_fast_api.infrastructure.services.rate_limit import RateLimiter
 
@@ -48,7 +49,7 @@ router = APIRouter()
 async def register(
     body: RegisterRequest,
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db_session),
     rate_limiter: RateLimiter = Depends(get_rate_limiter),
 ):
     check_result = await rate_limiter.check(

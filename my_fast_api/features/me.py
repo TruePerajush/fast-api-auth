@@ -7,8 +7,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_fast_api.dependencies import get_db, get_jwt_service
+from my_fast_api.dependencies import get_jwt_service
 from my_fast_api.domain.entities import Session, User
+from my_fast_api.infrastructure.database import get_db_session
 from my_fast_api.infrastructure.services.jwt_service import JwtService, TokenPayload
 
 router = APIRouter()
@@ -31,7 +32,7 @@ class MeResponse(BaseModel):
 @router.get("/me", response_model=MeResponse, status_code=status.HTTP_200_OK)
 async def me(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db_session),
     jwt_service: JwtService = Depends(get_jwt_service),
 ):
     payload: TokenPayload | None = jwt_service.verify_token(credentials.credentials)

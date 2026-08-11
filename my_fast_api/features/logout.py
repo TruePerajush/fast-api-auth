@@ -2,11 +2,11 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_fast_api.dependencies import get_db, get_jwt_service
+from my_fast_api.dependencies import get_jwt_service
 from my_fast_api.domain.entities import Session
+from my_fast_api.infrastructure.database import get_db_session
 from my_fast_api.infrastructure.services.jwt_service import JwtService
 
 router = APIRouter()
@@ -19,7 +19,7 @@ CREDENTIALS_EXCEPTION = HTTPException(
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db_session),
     jwt_service: JwtService = Depends(get_jwt_service),
 ):
     payload = jwt_service.verify_token(credentials.credentials)

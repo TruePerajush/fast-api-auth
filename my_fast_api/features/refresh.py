@@ -9,8 +9,9 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_fast_api.config import Settings, get_settings
-from my_fast_api.dependencies import get_db, get_jwt_service, get_rate_limiter
+from my_fast_api.dependencies import get_jwt_service, get_rate_limiter
 from my_fast_api.domain.entities import Session, User
+from my_fast_api.infrastructure.database import get_db_session
 from my_fast_api.infrastructure.services.jwt_service import JwtService
 from my_fast_api.infrastructure.services.rate_limit import RateLimiter
 
@@ -35,7 +36,7 @@ router = APIRouter()
 async def refresh(
     body: RefreshRequest,
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db_session),
     rate_limiter: RateLimiter = Depends(get_rate_limiter),
     jwt_service: JwtService = Depends(get_jwt_service),
     settings: Settings = Depends(get_settings),
