@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
-from my_fast_api.config import get_settings
+from my_fast_api.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,7 @@ class TokenPayload:
 
 
 class JwtService:
-    def __init__(self) -> None:
-        settings = get_settings()
+    def __init__(self, settings: Settings) -> None:
         self.secret = settings.jwt_secret
         self.issuer = settings.jwt_issuer
         self.audience = settings.jwt_audience

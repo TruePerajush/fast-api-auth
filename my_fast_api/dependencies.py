@@ -4,9 +4,10 @@ from functools import lru_cache
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from my_fast_api.config import get_settings
 from my_fast_api.infrastructure.database import AsyncSessionLocal
 from my_fast_api.infrastructure.redis import redis_client
-from my_fast_api.infrastructure.services.jwt_service import JwtService, jwt_service
+from my_fast_api.infrastructure.services.jwt_service import JwtService
 from my_fast_api.infrastructure.services.rate_limit import RateLimiter
 
 
@@ -25,9 +26,8 @@ async def get_redis() -> Redis:
     return redis_client
 
 
-@lru_cache
 def get_jwt_service() -> JwtService:
-    return jwt_service
+    return JwtService(get_settings())
 
 
 async def get_rate_limiter() -> RateLimiter:
