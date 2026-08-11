@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 
+from fastapi import Depends
 import redis.asyncio as redis
 from redis.asyncio import Redis
 
@@ -19,4 +20,7 @@ async def get_redis_client() -> AsyncGenerator[Redis]:
     try:
         yield client
     finally:
-        await client.close()
+        await client.aclose()
+
+async def get_redis(redis: Redis = Depends(get_redis_client)):
+    return redis

@@ -5,15 +5,9 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from my_fast_api.config import get_settings
-
 
 class Base(DeclarativeBase):
     pass
-
-
-settings = get_settings()
-
 
 class User(Base):
     __tablename__ = "users"

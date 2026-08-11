@@ -2,21 +2,24 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from pydantic import BaseModel
+from redis.exceptions import RedisError
 
+from my_fast_api.config import get_settings
 from my_fast_api.features.router import router
-from my_fast_api.infrastructure.database import create_tables, engine
-from my_fast_api.infrastructure.redis import redis_client
+from my_fast_api.infrastructure.database import create_tables, init_db_engine
+from my_fast_api.infrastructure.redis import get_redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    engine = init_db_engine(get_settings())
     await create_tables()
-    print("created")
+
+    redis_client = await get_redis()
     if not await redis_client.ping():
-        raise Exception("Redis is down")
+        raise RedisError("Redis is down")
     yield
     await engine.dispose()
-    await redis_client.aclose()
 
 
 app = FastAPI(lifespan=lifespan)
