@@ -1,5 +1,54 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: identity-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: identitydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
+    container_name: identity-redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: identity-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/identitydb
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: это-секрет-минимум-32-символа-замени-меня
+      JWT_ISSUER: identity-service
+      JWT_AUDIENCE: eshop-clients
+      ACCESS_TOKEN_TTL: 15
+      REFRESH_TOKEN_TTL: 30
+      LOGIN_MAX_FAILED_ATTEMPTS: 5
+      LOGIN_LOCKOUT_MINUTES: 1
+      ENVIRONMENT: development
+      DEBUG: "True"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

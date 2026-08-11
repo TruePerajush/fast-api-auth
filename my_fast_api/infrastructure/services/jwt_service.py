@@ -23,7 +23,9 @@ class JwtService:
         self.secret = settings.jwt_secret
         self.issuer = settings.jwt_issuer
         self.audience = settings.jwt_audience
-        self.expiration = settings.access_token_ttl
+        self.access_token_ttl = settings.access_token_ttl
+        self.refresh_token_ttl = settings.refresh_token_ttl
+
 
     @staticmethod
     def hash_token(token: str) -> str:
@@ -31,7 +33,7 @@ class JwtService:
 
     def generate_access_token(self, user_id: uuid.UUID, session_id: uuid.UUID) -> str:
         now = datetime.now(UTC)
-        expires_at = now + timedelta(minutes=self.expiration)
+        expires_at = now + timedelta(minutes=self.access_token_ttl)
 
         payload = {
             "sub": str(user_id),
@@ -47,7 +49,7 @@ class JwtService:
 
     def generate_refresh_token(self, user_id: uuid.UUID, session_id: uuid.UUID) -> str:
         now = datetime.now(UTC)
-        expires_at = now + timedelta(days=self.expiration)
+        expires_at = now + timedelta(days=self.refresh_token_ttl)
 
         payload = {
             "sub": str(user_id),
@@ -88,6 +90,3 @@ class JwtService:
             logger.info("token is invalid")
             logger.debug(e)
             return None
-
-
-jwt_service = JwtService()
