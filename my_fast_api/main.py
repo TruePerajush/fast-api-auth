@@ -37,7 +37,7 @@ class HealthCheckResponse(BaseModel):
 
 @app.get("/health", response_model=HealthCheckResponse)
 async def health_check() -> HealthCheckResponse:
-    return HealthCheckResponse(status="ok")
+    return HealthCheckResponse(status="up")
 
 
 if __name__ == "__main__":
