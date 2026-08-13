@@ -1,18 +1,16 @@
-import http
 import re
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_fast_api.infrastructure.database import get_db_session
 import my_fast_api.infrastructure.services.password_hasher as hasher
-from my_fast_api.dependencies import get_rate_limiter
+from my_fast_api.dependencies import get_limiter
 from my_fast_api.domain.entities import User
-from my_fast_api.infrastructure.services.rate_limit import RateLimiter
+from my_fast_api.infrastructure.database import get_db_session
 
 
 class RegisterRequest(BaseModel):
@@ -41,34 +39,22 @@ class RegisterResponse(BaseModel):
 
 
 router = APIRouter()
-
+limiter = get_limiter()
 
 @router.post(
-    "/register", response_model=RegisterResponse, status_code=http.HTTPStatus.CREATED
+    "/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED
 )
+@limiter.limit("5/minute")
 async def register(
     body: RegisterRequest,
-    request: Request,
     db: AsyncSession = Depends(get_db_session),
-    rate_limiter: RateLimiter = Depends(get_rate_limiter),
 ):
-    check_result = await rate_limiter.check(
-        "register_ip",
-        request.client.host,  # type: ignore
-        3,
-        60,
-    )
-    if check_result:
-        check_result.raise_error()
-        return
-
     email_lower = body.email.strip().lower()
 
-    db_result = await db.execute(select(User).where(User.email == email_lower))
-    user = db_result.scalar_one_or_none()
+    user = (await db.execute(select(User).where(User.email == email_lower))).scalar_one_or_none()
     if user:
         raise HTTPException(
-            status_code=http.HTTPStatus.CONFLICT,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Пользователь с таким email уже существует",
         )
 

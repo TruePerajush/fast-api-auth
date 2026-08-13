@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from typing import Any
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -20,12 +21,11 @@ class TokenPayload:
 
 class JwtService:
     def __init__(self, settings: Settings) -> None:
-        self.secret = settings.jwt_secret
-        self.issuer = settings.jwt_issuer
-        self.audience = settings.jwt_audience
-        self.access_token_ttl = settings.access_token_ttl
-        self.refresh_token_ttl = settings.refresh_token_ttl
-
+        self.secret: str = settings.jwt_secret
+        self.issuer: str = settings.jwt_issuer
+        self.audience: str = settings.jwt_audience
+        self.access_token_ttl: int = settings.access_token_ttl
+        self.refresh_token_ttl: int = settings.refresh_token_ttl
 
     @staticmethod
     def hash_token(token: str) -> str:
@@ -63,7 +63,7 @@ class JwtService:
 
         return jwt.encode(payload, self.secret, algorithm="HS256")
 
-    def decode_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> dict[str, str]:
         return jwt.decode(
             token,
             self.secret,

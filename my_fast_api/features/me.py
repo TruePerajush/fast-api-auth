@@ -2,23 +2,21 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_fast_api.dependencies import get_jwt_service
+from my_fast_api.common.errors import CREDENTIALS_EXCEPTION
+from my_fast_api.dependencies import get_jwt_service, get_limiter
 from my_fast_api.domain.entities import Session, User
 from my_fast_api.infrastructure.database import get_db_session
 from my_fast_api.infrastructure.services.jwt_service import JwtService, TokenPayload
 
 router = APIRouter()
+limiter = get_limiter()
 bearer_scheme = HTTPBearer()
 logger = logging.getLogger(__name__)
-
-CREDENTIALS_EXCEPTION = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-)
 
 
 class MeResponse(BaseModel):
@@ -30,6 +28,7 @@ class MeResponse(BaseModel):
 
 
 @router.get("/me", response_model=MeResponse, status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
 async def me(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db_session),

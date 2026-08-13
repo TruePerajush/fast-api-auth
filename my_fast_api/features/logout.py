@@ -1,22 +1,22 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_fast_api.dependencies import get_jwt_service
+from my_fast_api.common.errors import CREDENTIALS_EXCEPTION
+from my_fast_api.dependencies import get_jwt_service, get_limiter
 from my_fast_api.domain.entities import Session
 from my_fast_api.infrastructure.database import get_db_session
 from my_fast_api.infrastructure.services.jwt_service import JwtService
 
 router = APIRouter()
+limiter = get_limiter()
 bearer_scheme = HTTPBearer()
-CREDENTIALS_EXCEPTION = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("5/minute")
 async def logout(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db_session),

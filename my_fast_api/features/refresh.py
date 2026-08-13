@@ -1,19 +1,21 @@
-import http
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from fastapi import HTTPException, Request
+from fastapi import Request, status
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from my_fast_api.common.errors import CREDENTIALS_EXCEPTION
 from my_fast_api.config import Settings, get_settings
-from my_fast_api.dependencies import get_jwt_service, get_rate_limiter
+from my_fast_api.dependencies import get_jwt_service, get_limiter
 from my_fast_api.domain.entities import Session, User
 from my_fast_api.infrastructure.database import get_db_session
 from my_fast_api.infrastructure.services.jwt_service import JwtService
-from my_fast_api.infrastructure.services.rate_limit import RateLimiter
+
+router = APIRouter()
+limiter = get_limiter()
 
 
 class RefreshRequest(BaseModel):
@@ -25,32 +27,15 @@ class RefreshResponse(BaseModel):
     refresh_token: str
 
 
-CREDENTIALS_EXCEPTION = HTTPException(
-    status_code=http.HTTPStatus.UNAUTHORIZED, detail="Invalid credentials"
-)
-
-router = APIRouter()
-
-
-@router.post("/refresh", response_model=RefreshResponse, status_code=http.HTTPStatus.OK)
+@router.post("/refresh", response_model=RefreshResponse, status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
 async def refresh(
     body: RefreshRequest,
     request: Request,
     db: AsyncSession = Depends(get_db_session),
-    rate_limiter: RateLimiter = Depends(get_rate_limiter),
     jwt_service: JwtService = Depends(get_jwt_service),
     settings: Settings = Depends(get_settings),
 ):
-    check_result = await rate_limiter.check(
-        "refresh_ip",
-        request.client.host,  # type: ignore
-        3,
-        60,
-    )
-    if check_result:
-        check_result.raise_error()
-        return
-
     payload = jwt_service.verify_token(body.refresh_token)
     if not payload or payload.token_type != "refresh":
         raise CREDENTIALS_EXCEPTION

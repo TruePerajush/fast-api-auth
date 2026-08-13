@@ -7,7 +7,7 @@ from my_fast_api.features.me import router as me_r
 from my_fast_api.features.refresh import router as refresh_r
 from my_fast_api.features.register import router as register_r
 
-router = APIRouter(prefix="/api/identity")
+router = APIRouter(prefix="/api/auth")
 
 router.include_router(login_r)
 router.include_router(me_r)
