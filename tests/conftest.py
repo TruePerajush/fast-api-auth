@@ -22,6 +22,7 @@ async_session_maker = async_sessionmaker(
     expire_on_commit=False,
 )
 
+
 @pytest.fixture(scope="session")
 def event_loop():
     loop = asyncio.get_event_loop()
@@ -37,7 +38,6 @@ async def db_session() -> AsyncGenerator:
         yield session
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-
 
 
 @pytest.fixture(scope="function")

@@ -14,6 +14,7 @@ from my_fast_api.infrastructure.redis import RedisManager
 
 settings = get_settings()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     engine = init_db_engine(settings.database_url)
@@ -27,6 +28,7 @@ async def lifespan(app: FastAPI):
     yield
     await RedisManager.disconnect()
     await engine.dispose()
+
 
 limiter = get_limiter()
 
@@ -48,4 +50,5 @@ async def health_check() -> HealthCheckResponse:
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", reload=True)

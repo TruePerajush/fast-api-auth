@@ -41,6 +41,7 @@ class RegisterResponse(BaseModel):
 router = APIRouter()
 limiter = get_limiter()
 
+
 @router.post(
     "/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED
 )
@@ -51,7 +52,9 @@ async def register(
 ):
     email_lower = body.email.strip().lower()
 
-    user = (await db.execute(select(User).where(User.email == email_lower))).scalar_one_or_none()
+    user = (
+        await db.execute(select(User).where(User.email == email_lower))
+    ).scalar_one_or_none()
     if user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
