@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Security, status
+from fastapi import APIRouter, Depends, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +18,7 @@ bearer_scheme = HTTPBearer()
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("5/minute")
 async def logout(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db_session),
     jwt_service: JwtService = Depends(get_jwt_service),

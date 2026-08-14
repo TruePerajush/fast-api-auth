@@ -2,7 +2,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Security, status
+from fastapi import APIRouter, Depends, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,6 +30,7 @@ class MeResponse(BaseModel):
 @router.get("/me", response_model=MeResponse, status_code=status.HTTP_200_OK)
 @limiter.limit("5/minute")
 async def me(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db_session),
     jwt_service: JwtService = Depends(get_jwt_service),

@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,6 +47,7 @@ limiter = get_limiter()
 )
 @limiter.limit("5/minute")
 async def register(
+    request: Request,
     body: RegisterRequest,
     db: AsyncSession = Depends(get_db_session),
 ):
