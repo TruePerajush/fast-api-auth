@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import structlog
@@ -6,6 +7,11 @@ import structlog
 def setup_logging():
     is_docker = Path("./dockerenv").exists()
 
+    logging.basicConfig(
+        format="%(message)s",
+        level=logging.INFO,
+    )
+
     processors = None
     if is_docker:
         processors = [
@@ -13,7 +19,7 @@ def setup_logging():
             structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.JSONRenderer,
+            structlog.processors.JSONRenderer(),
         ]
     else:
         processors = [
