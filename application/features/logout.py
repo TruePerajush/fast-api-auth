@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_fast_api.common.errors import CREDENTIALS_EXCEPTION
-from my_fast_api.dependencies import get_jwt_service, get_limiter
-from my_fast_api.domain.entities import Session
-from my_fast_api.infrastructure.database import get_db_session
-from my_fast_api.infrastructure.services.jwt_service import JwtService
+from application.common.errors import CREDENTIALS_EXCEPTION
+from application.dependencies import get_jwt_service, get_limiter
+from application.domain.entities import Session
+from application.infrastructure.database import get_db_session
+from application.infrastructure.services.jwt_service import JwtService
 
 router = APIRouter()
 limiter = get_limiter()

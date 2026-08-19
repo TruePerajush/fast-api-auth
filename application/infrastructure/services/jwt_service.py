@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
-from my_fast_api.config import Settings
+from application.config import Settings
 
 logger = logging.getLogger(__name__)
 

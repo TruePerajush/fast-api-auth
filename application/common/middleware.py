@@ -1,9 +1,8 @@
-from logging import Logger
-from typing import override
 import uuid
+from typing import override
 
-from fastapi import Request, Response
 import structlog
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from structlog.stdlib import BoundLogger
 

@@ -1,20 +1,20 @@
 from contextlib import asynccontextmanager
 
+import structlog
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from redis import RedisError
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-import structlog
 from structlog.stdlib import BoundLogger
 
-from my_fast_api.common.logging import setup_logging
-from my_fast_api.common.middleware import LoggingMiddleware
-from my_fast_api.config import get_settings
-from my_fast_api.dependencies import get_limiter
-from my_fast_api.features.router import router
-from my_fast_api.infrastructure.database import create_tables, init_db_engine
-from my_fast_api.infrastructure.redis import RedisManager
+from application.common.logging import setup_logging
+from application.common.middleware import LoggingMiddleware
+from application.config import get_settings
+from application.dependencies import get_limiter
+from application.features.router import router
+from application.infrastructure.database import create_tables, init_db_engine
+from application.infrastructure.redis import RedisManager
 
 setup_logging()
 settings = get_settings()

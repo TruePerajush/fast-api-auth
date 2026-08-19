@@ -1,11 +1,9 @@
-from functools import lru_cache
-
 from fastapi import Depends
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from my_fast_api.config import Settings, get_settings
-from my_fast_api.infrastructure.services.jwt_service import JwtService
+from application.config import Settings, get_settings
+from application.infrastructure.services.jwt_service import JwtService
 
 
 def get_limiter() -> Limiter:

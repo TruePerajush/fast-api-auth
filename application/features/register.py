@@ -7,10 +7,10 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import my_fast_api.infrastructure.services.password_hasher as hasher
-from my_fast_api.dependencies import get_limiter
-from my_fast_api.domain.entities import User
-from my_fast_api.infrastructure.database import get_db_session
+import application.infrastructure.services.password_hasher as hasher
+from application.dependencies import get_limiter
+from application.domain.entities import User
+from application.infrastructure.database import get_db_session
 
 
 class RegisterRequest(BaseModel):
