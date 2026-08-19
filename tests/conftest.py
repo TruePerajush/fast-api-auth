@@ -6,7 +6,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from my_fast_api.domain.entities import Base
+from application.domain.entities import Base
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -45,7 +45,7 @@ async def client(db_session) -> AsyncGenerator:
     async def override_get_db():
         yield db_session
 
-    from my_fast_api.main import app
+    from application.main import app
 
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
