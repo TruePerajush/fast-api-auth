@@ -7,6 +7,8 @@ from sqlalchemy import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from application.domain.entities import Base
+from application.infrastructure.database import get_db_session
+from application.main import app
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -31,7 +33,7 @@ def event_loop():
 
 
 @pytest.fixture(scope="function")
-async def db_session() -> AsyncGenerator:
+async def db_session() -> AsyncGenerator[AsyncSession]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     async with async_session_maker() as session:
@@ -41,13 +43,28 @@ async def db_session() -> AsyncGenerator:
 
 
 @pytest.fixture(scope="function")
-async def client(db_session) -> AsyncGenerator:
-    async def override_get_db():
-        yield db_session
-
-    from application.main import app
-
+async def client() -> AsyncGenerator[AsyncClient]:
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         yield ac
+
+
+@pytest.fixture(autouse=True)
+async def override_get_db(db_session: AsyncGenerator[AsyncSession]):
+    async def _get_test_db_session():
+        yield db_session
+
+    app.dependency_overrides[get_db_session] = _get_test_db_session
+    yield
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def get_test_user_data() -> tuple[str, str]:
+    from tests.utils.user_utils import generate_email, generate_password
+
+    email = generate_email()
+    password = generate_password()
+
+    return email, password
